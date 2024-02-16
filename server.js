@@ -1,22 +1,30 @@
+// Required modules for app functionality
+// Back-end web framework for routing, middleware, and API
 const express = require('express');
-const { writeFile } = require('fs/promises');
+// Join directory paths
 const { join }  = require('path');
+// To write data to files
+const { writeFile } = require('fs/promises');
+// Generate a random UUID
 const { v4: uuidv4 } = require('uuid');
-
+// Notes data
 const notes = require('./db/db.json');
-
+// Use default port set by provider or manually set it
 const PORT = process.env.PORT || 3001;
-
+// Create instance of express function
 const app = express();
 
-// Parse incoming urlencoded payloads
+
+// Parse incoming requests with urlencoded payloads
 app.use(express.urlencoded({ extended: true }));
-// Parse incoming JSON payloads
+// Parse incoming requestes with JSON payloads
 app.use(express.json());
+// Serve static assets
 app.use(express.static('public'));
 
 
 // HTML Routes...
+// GET / returns index.html
 app.get('/', (req, res) =>
   res.sendFile(join(__dirname, 'index.html'))
 );
@@ -37,8 +45,10 @@ app.get('/api/notes/:id', (req, res) => {
   const id = req.params.id;
   console.log(`${req.method} request received to view note with ID: ${id}`);
 
-  // Search for the note with the ID
+  // Find the index of the note with the matching ID
   let index = notes.findIndex(note => note.id === id);
+
+  // Return the note
   return res.json(notes[index]);
 });
 
@@ -49,7 +59,9 @@ app.post('/api/notes', (req, res) => {
 
   const { title, text } = req.body;
 
+  // Ensure note has a title and text
   if (req.body) {
+    // Create new note object with the title, text, and generate a random UUID
     const newNote = {
       title,
       text,
@@ -82,9 +94,10 @@ app.delete('/api/notes/:id', (req, res) => {
   const id = req.params.id;
   console.log(`${req.method} request received to delete note with ID: ${id}`);
 
-  // Search for the note with the ID
+  // Find the index of the note with the matching ID
   let index = notes.findIndex(note => note.id === id);
   console.log(`This note will be deleted: ${JSON.stringify(notes[index])}`)
+  // Remove the note from the array
   notes.splice(index, 1);
   
   // Save updated notes to db.json
@@ -96,7 +109,6 @@ app.delete('/api/notes/:id', (req, res) => {
   // Return notes to client
   return res.json(notes);
 });
-
 
 // Fallback HTML route...
 // GET * returns index.html
